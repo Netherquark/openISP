@@ -28,7 +28,7 @@ class BNF:
         rdiff = np.zeros((5,5), dtype='uint16')
         for y in range(img_pad.shape[0] - 4):
             for x in range(img_pad.shape[1] - 4):
-                print("[x,y]:["+str(x)+','+str(y)+']')
+                # print("[x,y]:["+str(x)+','+str(y)+']')
                 for i in range(5):
                     for j in range(5):
                         rdiff[i,j] = abs(img_pad[y+i,x+j].astype(int) - img_pad[y+2, x+2].astype(int))

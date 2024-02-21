@@ -102,3 +102,14 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+#output
+output/images/*.dng
+output/images/*.png
+output/images/*.jpg
+output/images/*.jpeg
+output/images/*.raw
+output/binaries/*.bin
+output/images_default_settings_dng_png/images/*.dng
+output/images_default_settings_dng_png/images/*.png
+output/images_default_settings_dng_png/images/*.raw

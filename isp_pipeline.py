@@ -1,6 +1,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import csv
+import imageio
 from model.dpc import DPC
 from model.blc import BLC
 from model.aaf import AAF
@@ -19,6 +20,8 @@ from model.nlm import NLM
 
 raw_path = './raw/test.RAW'
 config_path = './config/config.csv'
+output_path_images = './output/images/'
+output_path_bin = './output/binaries/'
 
 f = open(config_path, 'r', encoding='utf-8-sig')
 with f:
@@ -186,32 +189,52 @@ with f:
             contrast = int(value) if 'contrast' in str(parameter) else contrast
             bcc_clip = int(value) if 'bcc_clip' in str(parameter) else bcc_clip
 
+step = 1
+
 rawimg = np.fromfile(raw_path, dtype='uint16', sep='')
 rawimg = rawimg.reshape([raw_h, raw_w])
 print(50*'-' + '\nLoading RAW Image Done......')
 #plt.imshow(rawimg, cmap='gray')
 #plt.show()
 
-# dead pixel correction
+# 1. dead pixel correction
 dpc = DPC(rawimg, dpc_thres, dpc_mode, dpc_clip)
 rawimg_dpc = dpc.execute()
 print(50*'-' + '\nDead Pixel Correction Done......')
+
+rawimg_dpc.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
+step += 1
+
+rawimg_dpc.tofile(output_path_bin + 'rawimg_dpc.bin')
+
 #plt.imshow(rawimg_dpc, cmap='gray')
 #plt.show()
 
-# black level compensation
+# 2. black level compensation
 parameter = [bl_r, bl_gr, bl_gb, bl_b, alpha, beta]
 blc = BLC(rawimg_dpc, parameter, bayer_pattern, blc_clip)
 rawimg_blc = blc.execute()
+
+rawimg_blc.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
+step += 1
+
+rawimg_blc.tofile(output_path_bin + 'rawimg_blc.bin')
+
 print(50*'-' + '\nBlack Level Compensation Done......')
 #plt.imshow(rawimg_blc, cmap='gray')
 #plt.show()
 
 # lens shading correction
 
-# anti-aliasing filter
+# 3. anti-aliasing filter
 aaf = AAF(rawimg_blc)
 rawimg_aaf = aaf.execute()
+
+rawimg_aaf.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
+step += 1
+
+rawimg_aaf.tofile(output_path_bin + 'rawimg_aaf.bin')
+
 print(50*'-' + '\nAnti-aliasing Filtering Done......')
 #plt.imshow(rawimg_aaf, cmap='gray')
 #plt.show()
@@ -220,36 +243,74 @@ print(50*'-' + '\nAnti-aliasing Filtering Done......')
 #plt.imshow(rawimg_diff, cmap='gray')
 #plt.show()
 
-# white balance gain control
+# 4. white balance gain control
 parameter = [r_gain, gr_gain, gb_gain, b_gain]
 awb = WBGC(rawimg_aaf, parameter, bayer_pattern, awb_clip)
 rawimg_awb = awb.execute()
+
+rawimg_awb.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
+step += 1
+
+rawimg_awb.tofile(output_path_bin + 'rawimg_awb.bin')
+
 print(50*'-' + '\nWhite Balance Gain Done......')
 #plt.imshow(rawimg_awb, cmap='gray')
 #plt.show()
 
-# chroma noise filtering
+# 5. chroma noise filtering
 cnf = CNF(rawimg_awb, bayer_pattern, 0, parameter, 1023)
 rawimg_cnf = cnf.execute()
+
+rawimg_cnf.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
+step += 1
+
+rawimg_cnf.tofile(output_path_bin + 'rawimg_cnf.bin')
+
 print(50*'-' + '\nChroma Noise Filtering Done......')
 #plt.imshow(rawimg_cnf/4, cmap='gray')
 #plt.show()
 
-# color filter array interpolation
+# 6. color filter array interpolation
 cfa = CFA(rawimg_cnf, cfa_mode, bayer_pattern, cfa_clip)
 rgbimg_cfa = cfa.execute()
+# rgbimg_cfa.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
+# plt.imsave(output_path_images + f'step_{step}.png', rgbimg_cfa)
+
+rgbimg_cfa_uint8 = (rgbimg_cfa).astype(np.uint8)
+imageio.imwrite(output_path_images + f'step_{step}.png', rgbimg_cfa_uint8)
+
+rgbimg_cfa_normalized = rgbimg_cfa / np.max(rgbimg_cfa)
+rgbimg_cfa_scaled = (rgbimg_cfa_normalized * 255).astype(np.uint8)
+imageio.imwrite(output_path_images + f'step_{step}_normalised.png', rgbimg_cfa_scaled)
+
+step += 1
+
+rgbimg_cfa.tofile(output_path_bin + 'rgbimg_cfa.bin')
+
 print(50*'-' + '\nDemosaicing Done......')
 #plt.imshow(rgbimg_cfa/4)
 #plt.show()
 
-# color correction matrix
+# 7. color correction matrix
 ccm = CCM(rgbimg_cfa, ccm)
 rgbimg_ccm = ccm.execute()
+
+rgbimg_ccm_uint8 = (rgbimg_ccm).astype(np.uint8)
+imageio.imwrite(output_path_images + f'step_{step}.png', rgbimg_ccm_uint8)
+
+rgbimg_ccm_normalized = rgbimg_ccm / np.max(rgbimg_ccm)
+rgbimg_ccm_scaled = (rgbimg_ccm_normalized * 255).astype(np.uint8)
+imageio.imwrite(output_path_images + f'step_{step}_normalised.png', rgbimg_ccm_scaled)
+
+step += 1
+
+rgbimg_ccm.tofile(output_path_bin + 'rgbimg_ccm.bin')
+
 print(50*'-' + '\nColor Correction Done......')
 #plt.imshow(rgbimg_ccm)
 #plt.show()
 
-# gamma correction
+# 8. gamma correction
 # look up table
 bw = 10
 gamma = 0.5
@@ -262,58 +323,129 @@ lut = dict(zip(ind, val))
 #print(ind, val, lut)
 gc = GC(rgbimg_ccm, lut, mode)
 rgbimg_gc = gc.execute()
+
+rgbimg_gc_uint8 = (rgbimg_gc).astype(np.uint8)
+imageio.imwrite(output_path_images + f'step_{step}.png', rgbimg_gc_uint8)
+rgbimg_gc_normalized = rgbimg_gc / np.max(rgbimg_gc)
+rgbimg_gc_scaled = (rgbimg_gc_normalized * 255).astype(np.uint8)
+imageio.imwrite(output_path_images + f'step_{step}_normalised.png', rgbimg_gc_scaled)
+
+step += 1
+
+rgbimg_gc.tofile(output_path_bin + 'rgbimg_gc.bin')
+
 print(50*'-' + '\nGamma Correction Done......')
 #plt.imshow(rgbimg_gc)
 #plt.show()
 
-# color space conversion
+# 9. color space conversion
 csc = CSC(rgbimg_ccm, csc)
 yuvimg_csc = csc.execute()
+
+yuvimg_csc_uint8 = (yuvimg_csc).astype(np.uint8)
+imageio.imwrite(output_path_images + f'step_{step}.png', yuvimg_csc_uint8)
+
+yuvimg_csc_normalized = yuvimg_csc / np.max(yuvimg_csc)
+yuvimg_csc_scaled = (yuvimg_csc_normalized * 255).astype(np.uint8)
+imageio.imwrite(output_path_images + f'step_{step}_normalised.png', yuvimg_csc_scaled)
+
+step += 1
+
+yuvimg_csc.tofile(output_path_bin + 'yuvimg_csc.bin')
+
 print(50*'-' + '\nColor Space Conversion Done......')
 #plt.imshow(yuvimg_csc[:,:,0], cmap='gray')
 #plt.show()
 
-# non-local means denoising
+# 10. non-local means denoising
 nlm = NLM(yuvimg_csc[:,:,0], 1, 4, nlm_h, nlm_clip)
 yuvimg_nlm = nlm.execute()
+
+yuvimg_nlm.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
+step += 1
+
+yuvimg_nlm.tofile(output_path_bin + 'yuvimg_nlm.bin')
+
 print(50*'-' + '\nNon Local Means Denoising Done......')
 #plt.imshow(yuvimg_nlm, cmap='gray')
 #plt.show()
 
-# bilateral filter
+# 11. bilateral filter
 bnf = BNF(yuvimg_nlm, bnf_dw, bnf_rw, bnf_rthres, bnf_clip)
 yuvimg_bnf = bnf.execute()
+
+yuvimg_bnf.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
+step += 1
+
+yuvimg_bnf.tofile(output_path_bin + 'yuvimg_bnf.bin')
+
 print(50*'-' + '\nBilateral Filtering Done......')
 #plt.imshow(yuvimg_bnf, cmap='gray')
 #plt.show()
 
-# edge enhancement
+# 12. edge enhancement
 ee = EE(yuvimg_bnf[:,:], edge_filter, ee_gain, ee_thres, ee_emclip)
 yuvimg_ee, yuvimg_edgemap = ee.execute()
+
+yuvimg_bnf.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
+step += 1
+
+yuvimg_ee.tofile(output_path_bin + 'yuvimg_ee.bin')
+
 print(50*'-' + '\nEdge Enhancement Done......')
 #plt.imshow(yuvimg_ee)
 #plt.show()
 #plt.imshow(yuvimg_edgemap)
 #plt.show()
 
-# false color suppresion
+# 13. false color suppresion
 fcs = FCS(yuvimg_csc[:,:,1:3], yuvimg_edgemap, fcs_edge, fcs_gain, fcs_intercept, fcs_slope)
 yuvimg_fcs = fcs.execute()
+
+yuvimg_fcs_uint8 = (yuvimg_fcs).astype(np.uint8)
+imageio.imwrite(output_path_images + f'step_{step}.png', yuvimg_fcs_uint8)
+
+yuvimg_fcs_normalized = yuvimg_fcs / np.max(yuvimg_fcs)
+yuvimg_fcs_scaled = (yuvimg_fcs_normalized * 255).astype(np.uint8)
+imageio.imwrite(output_path_images + f'step_{step}_normalised.png', yuvimg_fcs_scaled)
+
+step += 1
+
+yuvimg_fcs.tofile(output_path_bin + 'yuvimg_fcs.bin')
+
 print(50*'-' + '\nFalse Color Suppresion Done......')
 #plt.imshow(yuvimg_fcs)
 #plt.show()
 
-# hue/saturation control
+# 14. hue/saturation control
 hsc = HSC(yuvimg_fcs, hue, saturation, hsc_clip)
 yuvimg_hsc = hsc.execute()
+
+yuvimg_hsc_uint8 = (yuvimg_hsc).astype(np.uint8)
+imageio.imwrite(output_path_images + f'step_{step}.png', yuvimg_hsc_uint8)
+
+yuvimg_hsc_normalized = yuvimg_hsc / np.max(yuvimg_hsc)
+yuvimg_hsc_scaled = (yuvimg_hsc_normalized * 255).astype(np.uint8)
+imageio.imwrite(output_path_images + f'step_{step}_normalised.png', yuvimg_hsc_scaled)
+
+step += 1
+
+yuvimg_hsc.tofile(output_path_bin + 'yuvimg_hsc.bin')
+
 print(50*'-' + '\nHue/Saturation Adjustment Done......')
 #plt.imshow(yuvimg_hsc)
 #plt.show()
 
-# brighyness/contrast control
+# 15. brightness/contrast control
 contrast = contrast / pow(2,5)    #[-32,128]
 bcc = BCC(yuvimg_ee, brightness, contrast, bcc_clip)
 yuvimg_bcc = bcc.execute()
+
+yuvimg_bcc.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
+step += 1
+
+yuvimg_bcc.tofile(output_path_bin + 'yuvimg_bcc.bin')
+
 print(50*'-' + '\nBrightness/Contrast Adjustment Done......')
 #plt.imshow(yuvimg_bcc)
 #plt.show()
@@ -321,5 +453,8 @@ print(50*'-' + '\nBrightness/Contrast Adjustment Done......')
 yuvimg_out = np.empty((raw_h, raw_w, 3), dtype=np.uint8)
 yuvimg_out[:,:,0] = yuvimg_bcc
 yuvimg_out[:,:,1:3] = yuvimg_hsc
-#plt.imshow(yuvimg_out)
-#plt.show()
+plt.imshow(yuvimg_out)
+plt.show()
+
+yuvimg_out_uint8 = (yuvimg_out).astype(np.uint8)
+yuvimg_out_uint8.tofile(output_path_images + f'final.raw')
