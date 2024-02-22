@@ -23,6 +23,21 @@ raw_path = './raw/test.RAW'
 config_path = './config/config.csv'
 output_path_images = './output/images/'
 output_path_bin = './output/binaries/'
+output_path_bin_aaf = output_path_bin + 'rawimg_aaf.bin'
+output_path_bin_awb = output_path_bin + 'rawimg_awb.bin'
+output_path_bin_bcc = output_path_bin + 'yuvimg_bcc.bin'
+output_path_bin_blc = output_path_bin + 'rawimg_blc.bin'
+output_path_bin_bnf = output_path_bin + 'yuvimg_bnf.bin'
+output_path_bin_ccm = output_path_bin + 'rgbimg_ccm.bin'
+output_path_bin_cfa = output_path_bin + 'rgbimg_cfa.bin'
+output_path_bin_cnf = output_path_bin + 'rawimg_cnf.bin'
+output_path_bin_csc = output_path_bin + 'yuvimg_csc.bin'
+output_path_bin_dpc = output_path_bin + 'rawimg_dpc.bin'
+output_path_bin_ee = output_path_bin + 'yuvimg_ee.bin'
+output_path_bin_fcs = output_path_bin + 'yuvimg_fcs.bin'
+output_path_bin_gc = output_path_bin + 'rgbimg_gc.bin'
+output_path_bin_hsc = output_path_bin + 'yuvimg_hsc.bin'
+output_path_bin_nlm = output_path_bin + 'yuvimg_nlm.bin'
 
 f = open(config_path, 'r', encoding='utf-8-sig')
 with f:
@@ -212,7 +227,7 @@ rawimg_dpc = dpc.execute()
 print(50*'-' + '\nDead Pixel Correction Done......')
 
 rawimg_dpc.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-rawimg_dpc.tofile(output_path_bin + 'rawimg_dpc.bin')
+rawimg_dpc.astype(np.uint16).tofile(output_path_bin + 'rawimg_dpc.bin')
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -225,13 +240,15 @@ step += 1
 #plt.show()
 
 # 2. black level compensation
+rawimg_dpc = np.fromfile(output_path_bin_dpc, dtype=np.uint16, sep='')
+rawimg_dpc = rawimg_dpc.reshape([raw_h, raw_w])
 parameter = [bl_r, bl_gr, bl_gb, bl_b, alpha, beta]
 blc = BLC(rawimg_dpc, parameter, bayer_pattern, blc_clip)
 rawimg_blc = blc.execute()
 print(50*'-' + '\nBlack Level Compensation Done......')
 
 rawimg_blc.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-rawimg_blc.tofile(output_path_bin + 'rawimg_blc.bin')
+rawimg_blc.astype(np.uint16).tofile(output_path_bin + 'rawimg_blc.bin')
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -246,12 +263,15 @@ step += 1
 # lens shading correction
 
 # 3. anti-aliasing filter
+rawimg_blc = np.fromfile(output_path_bin_blc, dtype=np.uint16, sep='')
+rawimg_blc = rawimg_blc.reshape([raw_h, raw_w])
 aaf = AAF(rawimg_blc)
 rawimg_aaf = aaf.execute()
 print(50*'-' + '\nAnti-aliasing Filtering Done......')
 
 rawimg_aaf.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
 rawimg_aaf.tofile(output_path_bin + 'rawimg_aaf.bin')
+rawimg_aaf.astype(np.uint16).tofile(output_path_bin + 'rawimg_aaf.bin')
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -268,13 +288,15 @@ step += 1
 #plt.show()
 
 # 4. white balance gain control
+rawimg_aaf = np.fromfile(output_path_bin_aaf, dtype=np.uint16, sep='')
+rawimg_aaf = rawimg_aaf.reshape([raw_h, raw_w])
 parameter = [r_gain, gr_gain, gb_gain, b_gain]
 awb = WBGC(rawimg_aaf, parameter, bayer_pattern, awb_clip)
 rawimg_awb = awb.execute()
 print(50*'-' + '\nWhite Balance Gain Done......')
 
 rawimg_awb.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-rawimg_awb.tofile(output_path_bin + 'rawimg_awb.bin')
+rawimg_awb.astype(np.uint16).tofile(output_path_bin + 'rawimg_awb.bin')
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -287,12 +309,14 @@ step += 1
 #plt.show()
 
 # 5. chroma noise filtering
+rawimg_awb = np.fromfile(output_path_bin_awb, dtype=np.uint16, sep='')
+rawimg_awb = rawimg_awb.reshape([raw_h, raw_w])
 cnf = CNF(rawimg_awb, bayer_pattern, 0, parameter, 1023)
 rawimg_cnf = cnf.execute()
 print(50*'-' + '\nChroma Noise Filtering Done......')
 
 rawimg_cnf.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-rawimg_cnf.tofile(output_path_bin + 'rawimg_cnf.bin')
+rawimg_cnf.astype(np.uint16).tofile(output_path_bin + 'rawimg_cnf.bin')
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -305,6 +329,8 @@ step += 1
 #plt.show()
 
 # 6. color filter array interpolation
+rawimg_cnf = np.fromfile(output_path_bin_cnf, dtype=np.uint16, sep='')
+rawimg_cnf = rawimg_cnf.reshape([raw_h, raw_w])
 cfa = CFA(rawimg_cnf, cfa_mode, bayer_pattern, cfa_clip)
 rgbimg_cfa = cfa.execute()
 print(50*'-' + '\nDemosaicing Done......')
