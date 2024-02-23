@@ -109,7 +109,5 @@ output/images/*.png
 output/images/*.jpg
 output/images/*.jpeg
 output/images/*.raw
+output/images/*.tiff
 output/binaries/*.bin
-output/images_default_settings_dng_png/images/*.dng
-output/images_default_settings_dng_png/images/*.png
-output/images_default_settings_dng_png/images/*.raw
