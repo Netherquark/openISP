@@ -227,7 +227,7 @@ rawimg_dpc = dpc.execute()
 print(50*'-' + '\nDead Pixel Correction Done......')
 
 rawimg_dpc.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-rawimg_dpc.astype(np.uint16).tofile(output_path_bin + 'rawimg_dpc.bin')
+rawimg_dpc.astype(np.uint16).tofile(output_path_bin_dpc)
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -248,7 +248,7 @@ rawimg_blc = blc.execute()
 print(50*'-' + '\nBlack Level Compensation Done......')
 
 rawimg_blc.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-rawimg_blc.astype(np.uint16).tofile(output_path_bin + 'rawimg_blc.bin')
+rawimg_blc.astype(np.uint16).tofile(output_path_bin_blc)
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -270,8 +270,7 @@ rawimg_aaf = aaf.execute()
 print(50*'-' + '\nAnti-aliasing Filtering Done......')
 
 rawimg_aaf.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-rawimg_aaf.tofile(output_path_bin + 'rawimg_aaf.bin')
-rawimg_aaf.astype(np.uint16).tofile(output_path_bin + 'rawimg_aaf.bin')
+rawimg_aaf.astype(np.uint16).tofile(output_path_bin_aaf)
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -296,7 +295,7 @@ rawimg_awb = awb.execute()
 print(50*'-' + '\nWhite Balance Gain Done......')
 
 rawimg_awb.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-rawimg_awb.astype(np.uint16).tofile(output_path_bin + 'rawimg_awb.bin')
+rawimg_awb.astype(np.uint16).tofile(output_path_bin_awb)
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -316,7 +315,7 @@ rawimg_cnf = cnf.execute()
 print(50*'-' + '\nChroma Noise Filtering Done......')
 
 rawimg_cnf.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-rawimg_cnf.astype(np.uint16).tofile(output_path_bin + 'rawimg_cnf.bin')
+rawimg_cnf.astype(np.uint16).tofile(output_path_bin_cnf)
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -341,7 +340,7 @@ imageio.imwrite(output_path_images + f'step_{step}.tiff', rgbimg_cfa_uint8)
 rgbimg_cfa_normalized = rgbimg_cfa / np.max(rgbimg_cfa)
 rgbimg_cfa_scaled = (rgbimg_cfa_normalized * 255).astype(np.uint8)
 imageio.imwrite(output_path_images + f'step_{step}_normalised.tiff', rgbimg_cfa_scaled)
-rgbimg_cfa.tofile(output_path_bin + 'rgbimg_cfa.bin')
+rgbimg_cfa.tofile(output_path_bin_cfa)
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -364,7 +363,7 @@ imageio.imwrite(output_path_images + f'step_{step}.tiff', rgbimg_ccm_uint8)
 rgbimg_ccm_normalized = rgbimg_ccm / np.max(rgbimg_ccm)
 rgbimg_ccm_scaled = (rgbimg_ccm_normalized * 255).astype(np.uint8)
 imageio.imwrite(output_path_images + f'step_{step}_normalised.tiff', rgbimg_ccm_scaled)
-rgbimg_ccm.tofile(output_path_bin + 'rgbimg_ccm.bin')
+rgbimg_ccm.tofile(output_path_bin_ccm)
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -396,7 +395,7 @@ imageio.imwrite(output_path_images + f'step_{step}.tiff', rgbimg_gc_uint8)
 rgbimg_gc_normalized = rgbimg_gc / np.max(rgbimg_gc)
 rgbimg_gc_scaled = (rgbimg_gc_normalized * 255).astype(np.uint8)
 imageio.imwrite(output_path_images + f'step_{step}_normalised.tiff', rgbimg_gc_scaled)
-rgbimg_gc.tofile(output_path_bin + 'rgbimg_gc.bin')
+rgbimg_gc.tofile(output_path_bin_gc)
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -419,7 +418,7 @@ imageio.imwrite(output_path_images + f'step_{step}.tiff', yuvimg_csc_uint8)
 yuvimg_csc_normalized = yuvimg_csc / np.max(yuvimg_csc)
 yuvimg_csc_scaled = (yuvimg_csc_normalized * 255).astype(np.uint8)
 imageio.imwrite(output_path_images + f'step_{step}_normalised.tiff', yuvimg_csc_scaled)
-yuvimg_csc.tofile(output_path_bin + 'yuvimg_csc.bin')
+yuvimg_csc.tofile(output_path_bin_csc)
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -437,7 +436,7 @@ yuvimg_nlm = nlm.execute()
 print(50*'-' + '\nNon Local Means Denoising Done......')
 
 yuvimg_nlm.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-yuvimg_nlm.tofile(output_path_bin + 'yuvimg_nlm.bin')
+yuvimg_nlm.tofile(output_path_bin_nlm)
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -455,7 +454,7 @@ yuvimg_bnf = bnf.execute()
 print(50*'-' + '\nBilateral Filtering Done......')
 
 yuvimg_bnf.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-yuvimg_bnf.tofile(output_path_bin + 'yuvimg_bnf.bin')
+yuvimg_bnf.tofile(output_path_bin_bnf)
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -473,7 +472,7 @@ yuvimg_ee, yuvimg_edgemap = ee.execute()
 print(50*'-' + '\nEdge Enhancement Done......')
 
 yuvimg_bnf.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-yuvimg_ee.tofile(output_path_bin + 'yuvimg_ee.bin')
+yuvimg_ee.tofile(output_path_bin_ee)
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -498,7 +497,7 @@ imageio.imwrite(output_path_images + f'step_{step}.tiff', yuvimg_fcs_uint8)
 yuvimg_fcs_normalized = yuvimg_fcs / np.max(yuvimg_fcs)
 yuvimg_fcs_scaled = (yuvimg_fcs_normalized * 255).astype(np.uint8)
 imageio.imwrite(output_path_images + f'step_{step}_normalised.tiff', yuvimg_fcs_scaled)
-yuvimg_fcs.tofile(output_path_bin + 'yuvimg_fcs.bin')
+yuvimg_fcs.tofile(output_path_bin_fcs)
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -520,7 +519,7 @@ imageio.imwrite(output_path_images + f'step_{step}.tiff', yuvimg_hsc_uint8)
 yuvimg_hsc_normalized = yuvimg_hsc / np.max(yuvimg_hsc)
 yuvimg_hsc_scaled = (yuvimg_hsc_normalized * 255).astype(np.uint8)
 imageio.imwrite(output_path_images + f'step_{step}_normalised.tiff', yuvimg_hsc_scaled)
-yuvimg_hsc.tofile(output_path_bin + 'yuvimg_hsc.bin')
+yuvimg_hsc.tofile(output_path_bin_hsc)
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000
@@ -539,7 +538,7 @@ yuvimg_bcc = bcc.execute()
 print(50*'-' + '\nBrightness/Contrast Adjustment Done......')
 
 yuvimg_bcc.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-yuvimg_bcc.tofile(output_path_bin + 'yuvimg_bcc.bin')
+yuvimg_bcc.tofile(output_path_bin_bcc)
 step_end_time = time.perf_counter()
 step_time = (step_end_time - step_start_time) * 1000
 total_time = (step_end_time - total_start_time) * 1000

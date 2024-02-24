@@ -111,3 +111,4 @@ output/images/*.jpeg
 output/images/*.raw
 output/images/*.tiff
 output/binaries/*.bin
+.vscode/settings.json
