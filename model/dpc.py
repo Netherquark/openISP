@@ -2,7 +2,7 @@
 import numpy as np
 
 class DPC:
-    'Dead Pixel Correction'
+    'Dead Pixel Correction' 
 
     def __init__(self, img, thres, mode, clip):
         self.img = img

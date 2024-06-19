@@ -1,6 +1,6 @@
 ﻿Variables,Values,Description
-raw_w,1920,Raw image width
-raw_h,1080,Raw image height
+raw_w,1552,Raw image width
+raw_h,1024,Raw image height
 dpc_thres,30,DPC threshold
 dpc_mode,gradient,DPC mode
 dpc_clip,1023,DPC clip value

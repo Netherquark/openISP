@@ -2,6 +2,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import csv
 import imageio
+import rawpy
 import time
 from model.dpc import DPC
 from model.blc import BLC
@@ -214,8 +215,14 @@ total_start_time = time.perf_counter()
 step_start_time = time.perf_counter()
 step = 1
 
-rawimg = np.fromfile(raw_path, dtype='uint16', sep='')
-rawimg = rawimg.reshape([raw_h, raw_w])
+# rawimg = np.fromfile(raw_path, dtype='uint16', sep='')
+# rawimg = rawimg.reshape([raw_h, raw_w])
+rawimg_rawpy = rawpy.imread('./raw/test_raw/RAW_CANON_PRO70_SRGB.CRW')#.astype('uint16')*255
+rawimg_rawpy = rawimg_rawpy.raw_image
+# imageio.imwrite('./raw/RAW_CANON_PRO70_SRGB_imgio.tiff', rawimg_imgio)
+# rawimg = np.array(rawimg_imgio, dtype='uint16')
+rawimg = np.frombuffer(rawimg_rawpy, dtype=np.uint16).reshape(raw_h, raw_w)
+
 print(50*'-' + '\nLoading RAW Image Done......')
 
 measure_step_time(step, step_start_time)
