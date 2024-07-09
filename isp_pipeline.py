@@ -5,8 +5,6 @@ import imageio
 import rawpy
 import time
 from model.dpc import DPC
-from model.awb import WBGC
-from model.cnf import CNF
 from model.cfa import CFA
 from model.gac import GC
 from model.ccm import CCM
@@ -22,12 +20,10 @@ raw_path = './raw/test.RAW'
 config_path = './config/config.csv'
 output_path_images = './output/images/'
 output_path_bin = './output/binaries/'
-output_path_bin_awb = output_path_bin + 'rawimg_awb.bin'
 output_path_bin_bcc = output_path_bin + 'yuvimg_bcc.bin'
 output_path_bin_bnf = output_path_bin + 'yuvimg_bnf.bin'
 output_path_bin_ccm = output_path_bin + 'rgbimg_ccm.bin'
 output_path_bin_cfa = output_path_bin + 'rgbimg_cfa.bin'
-output_path_bin_cnf = output_path_bin + 'rawimg_cnf.bin'
 output_path_bin_csc = output_path_bin + 'yuvimg_csc.bin'
 output_path_bin_dpc = output_path_bin + 'rawimg_dpc.bin'
 output_path_bin_ee = output_path_bin + 'yuvimg_ee.bin'
@@ -246,49 +242,10 @@ step += 1
 #plt.imshow(rawimg_dpc, cmap='gray')
 #plt.show()
 
-# 2. white balance gain control
+# 2. color filter array interpolation
 rawimg_dpc = np.fromfile(output_path_bin_dpc, dtype=np.uint16, sep='')
 rawimg_dpc = rawimg_dpc.reshape([raw_h, raw_w])
-parameter = [r_gain, gr_gain, gb_gain, b_gain]
-awb = WBGC(rawimg_dpc, parameter, bayer_pattern, awb_clip)
-rawimg_awb = awb.execute()
-print(50*'-' + '\nWhite Balance Gain Done......')
-
-rawimg_awb.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-rawimg_awb.astype(np.uint16).tofile(output_path_bin_awb)
-
-measure_step_time(step, step_start_time)
-
-step_start_time = time.perf_counter()
-step += 1
-
-
-#plt.imshow(rawimg_awb, cmap='gray')
-#plt.show()
-
-# 5. chroma noise filtering
-rawimg_awb = np.fromfile(output_path_bin_awb, dtype=np.uint16, sep='')
-rawimg_awb = rawimg_awb.reshape([raw_h, raw_w])
-cnf = CNF(rawimg_awb, bayer_pattern, 0, parameter, 1023)
-rawimg_cnf = cnf.execute()
-print(50*'-' + '\nChroma Noise Filtering Done......')
-
-rawimg_cnf.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-rawimg_cnf.astype(np.uint16).tofile(output_path_bin_cnf)
-
-measure_step_time(step, step_start_time)
-
-step_start_time = time.perf_counter()
-step += 1
-
-
-#plt.imshow(rawimg_cnf/4, cmap='gray')
-#plt.show()
-
-# 6. color filter array interpolation
-rawimg_cnf = np.fromfile(output_path_bin_cnf, dtype=np.uint16, sep='')
-rawimg_cnf = rawimg_cnf.reshape([raw_h, raw_w])
-cfa = CFA(rawimg_cnf, cfa_mode, bayer_pattern, cfa_clip)
+cfa = CFA(rawimg_dpc, cfa_mode, bayer_pattern, cfa_clip)
 rgbimg_cfa = cfa.execute()
 print(50*'-' + '\nDemosaicing Done......')
 
