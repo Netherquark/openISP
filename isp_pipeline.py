@@ -5,7 +5,6 @@ import imageio
 import rawpy
 import time
 from model.dpc import DPC
-from model.aaf import AAF
 from model.awb import WBGC
 from model.cnf import CNF
 from model.cfa import CFA
@@ -23,10 +22,8 @@ raw_path = './raw/test.RAW'
 config_path = './config/config.csv'
 output_path_images = './output/images/'
 output_path_bin = './output/binaries/'
-output_path_bin_aaf = output_path_bin + 'rawimg_aaf.bin'
 output_path_bin_awb = output_path_bin + 'rawimg_awb.bin'
 output_path_bin_bcc = output_path_bin + 'yuvimg_bcc.bin'
-output_path_bin_blc = output_path_bin + 'rawimg_blc.bin'
 output_path_bin_bnf = output_path_bin + 'yuvimg_bnf.bin'
 output_path_bin_ccm = output_path_bin + 'rgbimg_ccm.bin'
 output_path_bin_cfa = output_path_bin + 'rgbimg_cfa.bin'
@@ -249,34 +246,11 @@ step += 1
 #plt.imshow(rawimg_dpc, cmap='gray')
 #plt.show()
 
-# 2. anti-aliasing filter
+# 2. white balance gain control
 rawimg_dpc = np.fromfile(output_path_bin_dpc, dtype=np.uint16, sep='')
 rawimg_dpc = rawimg_dpc.reshape([raw_h, raw_w])
-aaf = AAF(rawimg_dpc)
-rawimg_aaf = aaf.execute()
-print(50*'-' + '\nAnti-aliasing Filtering Done......')
-
-rawimg_aaf.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-rawimg_aaf.astype(np.uint16).tofile(output_path_bin_aaf)
-
-measure_step_time(step, step_start_time)
-
-step_start_time = time.perf_counter()
-step += 1
-
-
-#plt.imshow(rawimg_aaf, cmap='gray')
-#plt.show()
-
-#rawimg_diff = rawimg_blc - rawimg_aaf
-#plt.imshow(rawimg_diff, cmap='gray')
-#plt.show()
-
-# 4. white balance gain control
-rawimg_aaf = np.fromfile(output_path_bin_aaf, dtype=np.uint16, sep='')
-rawimg_aaf = rawimg_aaf.reshape([raw_h, raw_w])
 parameter = [r_gain, gr_gain, gb_gain, b_gain]
-awb = WBGC(rawimg_aaf, parameter, bayer_pattern, awb_clip)
+awb = WBGC(rawimg_dpc, parameter, bayer_pattern, awb_clip)
 rawimg_awb = awb.execute()
 print(50*'-' + '\nWhite Balance Gain Done......')
 
