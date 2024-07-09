@@ -7,7 +7,6 @@ import time
 from model.dpc import DPC
 from model.cfa import CFA
 from model.csc import CSC
-from model.bnf import BNF
 from model.eeh import EE
 from model.fcs import FCS
 from model.bcc import BCC
@@ -19,7 +18,6 @@ config_path = './config/config.csv'
 output_path_images = './output/images/'
 output_path_bin = './output/binaries/'
 output_path_bin_bcc = output_path_bin + 'yuvimg_bcc.bin'
-output_path_bin_bnf = output_path_bin + 'yuvimg_bnf.bin'
 output_path_bin_cfa = output_path_bin + 'rgbimg_cfa.bin'
 output_path_bin_csc = output_path_bin + 'yuvimg_csc.bin'
 output_path_bin_dpc = output_path_bin + 'rawimg_dpc.bin'
@@ -284,7 +282,7 @@ step += 1
 #plt.imshow(yuvimg_csc[:,:,0], cmap='gray')
 #plt.show()
 
-# 10. non-local means denoising
+# 4. non-local means denoising
 nlm = NLM(yuvimg_csc[:,:,0], 1, 4, nlm_h, nlm_clip)
 yuvimg_nlm = nlm.execute()
 print(50*'-' + '\nNon Local Means Denoising Done......')
@@ -301,29 +299,13 @@ step += 1
 #plt.imshow(yuvimg_nlm, cmap='gray')
 #plt.show()
 
-# 11. bilateral filter
-bnf = BNF(yuvimg_nlm, bnf_dw, bnf_rw, bnf_rthres, bnf_clip)
-yuvimg_bnf = bnf.execute()
-print(50*'-' + '\nBilateral Filtering Done......')
 
-yuvimg_bnf.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-yuvimg_bnf.tofile(output_path_bin_bnf)
-
-measure_step_time(step, step_start_time)
-
-step_start_time = time.perf_counter()
-step += 1
-
-
-#plt.imshow(yuvimg_bnf, cmap='gray')
-#plt.show()
-
-# 12. edge enhancement
-ee = EE(yuvimg_bnf[:,:], edge_filter, ee_gain, ee_thres, ee_emclip)
+# 5. edge enhancement
+ee = EE(yuvimg_nlm[:,:], edge_filter, ee_gain, ee_thres, ee_emclip)
 yuvimg_ee, yuvimg_edgemap = ee.execute()
 print(50*'-' + '\nEdge Enhancement Done......')
 
-yuvimg_bnf.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
+yuvimg_ee.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
 yuvimg_ee.tofile(output_path_bin_ee)
 
 measure_step_time(step, step_start_time)
