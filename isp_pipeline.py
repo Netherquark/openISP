@@ -5,7 +5,6 @@ import imageio
 import rawpy
 import time
 from model.dpc import DPC
-from model.blc import BLC
 from model.aaf import AAF
 from model.awb import WBGC
 from model.cnf import CNF
@@ -228,6 +227,8 @@ print(50*'-' + '\nLoading RAW Image Done......')
 measure_step_time(step, step_start_time)
 
 step_start_time = time.perf_counter()
+step += 1
+
 #plt.imshow(rawimg, cmap='gray')
 #plt.show()
 
@@ -248,32 +249,10 @@ step += 1
 #plt.imshow(rawimg_dpc, cmap='gray')
 #plt.show()
 
-# 2. black level compensation
+# 2. anti-aliasing filter
 rawimg_dpc = np.fromfile(output_path_bin_dpc, dtype=np.uint16, sep='')
 rawimg_dpc = rawimg_dpc.reshape([raw_h, raw_w])
-parameter = [bl_r, bl_gr, bl_gb, bl_b, alpha, beta]
-blc = BLC(rawimg_dpc, parameter, bayer_pattern, blc_clip)
-rawimg_blc = blc.execute()
-print(50*'-' + '\nBlack Level Compensation Done......')
-
-rawimg_blc.astype('uint16').tofile(output_path_images + f'step_{step}.dng')
-rawimg_blc.astype(np.uint16).tofile(output_path_bin_blc)
-
-measure_step_time(step, step_start_time)
-
-step_start_time = time.perf_counter()
-step += 1
-
-
-#plt.imshow(rawimg_blc, cmap='gray')
-#plt.show()
-
-# lens shading correction
-
-# 3. anti-aliasing filter
-rawimg_blc = np.fromfile(output_path_bin_blc, dtype=np.uint16, sep='')
-rawimg_blc = rawimg_blc.reshape([raw_h, raw_w])
-aaf = AAF(rawimg_blc)
+aaf = AAF(rawimg_dpc)
 rawimg_aaf = aaf.execute()
 print(50*'-' + '\nAnti-aliasing Filtering Done......')
 
