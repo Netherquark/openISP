@@ -6,8 +6,6 @@ import rawpy
 import time
 from model.dpc import DPC
 from model.cfa import CFA
-from model.gac import GC
-from model.ccm import CCM
 from model.csc import CSC
 from model.bnf import BNF
 from model.eeh import EE
@@ -22,13 +20,11 @@ output_path_images = './output/images/'
 output_path_bin = './output/binaries/'
 output_path_bin_bcc = output_path_bin + 'yuvimg_bcc.bin'
 output_path_bin_bnf = output_path_bin + 'yuvimg_bnf.bin'
-output_path_bin_ccm = output_path_bin + 'rgbimg_ccm.bin'
 output_path_bin_cfa = output_path_bin + 'rgbimg_cfa.bin'
 output_path_bin_csc = output_path_bin + 'yuvimg_csc.bin'
 output_path_bin_dpc = output_path_bin + 'rawimg_dpc.bin'
 output_path_bin_ee = output_path_bin + 'yuvimg_ee.bin'
 output_path_bin_fcs = output_path_bin + 'yuvimg_fcs.bin'
-output_path_bin_gc = output_path_bin + 'rgbimg_gc.bin'
 output_path_bin_hsc = output_path_bin + 'yuvimg_hsc.bin'
 output_path_bin_nlm = output_path_bin + 'yuvimg_nlm.bin'
 
@@ -266,61 +262,8 @@ step += 1
 #plt.imshow(rgbimg_cfa/4)
 #plt.show()
 
-# 7. color correction matrix
-ccm = CCM(rgbimg_cfa, ccm)
-rgbimg_ccm = ccm.execute()
-print(50*'-' + '\nColor Correction Done......')
-
-rgbimg_ccm_uint8 = (rgbimg_ccm).astype(np.uint8)
-imageio.imwrite(output_path_images + f'step_{step}.tiff', rgbimg_ccm_uint8)
-
-rgbimg_ccm_normalized = rgbimg_ccm / np.max(rgbimg_ccm)
-rgbimg_ccm_scaled = (rgbimg_ccm_normalized * 255).astype(np.uint8)
-imageio.imwrite(output_path_images + f'step_{step}_normalised.tiff', rgbimg_ccm_scaled)
-rgbimg_ccm.tofile(output_path_bin_ccm)
-
-measure_step_time(step, step_start_time)
-
-step_start_time = time.perf_counter()
-step += 1
-
-
-#plt.imshow(rgbimg_ccm)
-#plt.show()
-
-# 8. gamma correction
-# look up table
-bw = 10
-gamma = 0.5
-mode = 'rgb'
-
-maxval = pow(2,bw)
-ind = range(0, maxval)
-val = [round(pow(float(i)/maxval, gamma) * maxval) for i in ind]
-lut = dict(zip(ind, val))
-#print(ind, val, lut)
-gc = GC(rgbimg_ccm, lut, mode)
-rgbimg_gc = gc.execute()
-print(50*'-' + '\nGamma Correction Done......')
-
-rgbimg_gc_uint8 = (rgbimg_gc).astype(np.uint8)
-imageio.imwrite(output_path_images + f'step_{step}.tiff', rgbimg_gc_uint8)
-rgbimg_gc_normalized = rgbimg_gc / np.max(rgbimg_gc)
-rgbimg_gc_scaled = (rgbimg_gc_normalized * 255).astype(np.uint8)
-imageio.imwrite(output_path_images + f'step_{step}_normalised.tiff', rgbimg_gc_scaled)
-rgbimg_gc.tofile(output_path_bin_gc)
-
-measure_step_time(step, step_start_time)
-
-step_start_time = time.perf_counter()
-step += 1
-
-
-#plt.imshow(rgbimg_gc)
-#plt.show()
-
-# 9. color space conversion
-csc = CSC(rgbimg_ccm, csc)
+# 3. color space conversion
+csc = CSC(rgbimg_cfa, csc)
 yuvimg_csc = csc.execute()
 print(50*'-' + '\nColor Space Conversion Done......')
 
